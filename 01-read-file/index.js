@@ -8,4 +8,4 @@ const input = fs.createReadStream(
 
 input.on('data', (chunk) => {
   stdout.write(chunk);
-})
+});
