@@ -16,8 +16,8 @@ readdir(url, option).then(
           path.parse(filePath).name
         ];
         stat(filePath).then(stats => {
-          const k = 1024;
-          const fileSize = Number(stats.size / k).toFixed(3);
+          const kb = 1024;
+          const fileSize = Number(stats.size / kb).toFixed(3);
           console.log(
             `${fileName} - ${fileExt} - ${fileSize}kb
             \n--------------------------------------`);

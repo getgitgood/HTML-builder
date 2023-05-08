@@ -11,7 +11,7 @@ const optMkdir = {recursive: true};
 
 
 rm(copyDir, optRmdir).then(() => {
-  mkdir(copyDir, optMkdir).then(
+  mkdir(copyDir, optMkdir).then(() =>
     readdir(srcDir, optReaddir)
       .then(files => {
         for (const file of files) {
