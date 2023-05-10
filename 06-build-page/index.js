@@ -27,7 +27,6 @@ async function mergeStyle(dist, from) {
         });
       }
     }
-    console.log(`\nStyles succesfuly merged to ${dist}\n`);
   }
   );
 }
@@ -66,11 +65,13 @@ async function replace() {
       });
     }
   }
-  mkdir(distPath, {recursive: true}).then(writeFile(htmlPath, html));
+  mkdir(distPath, optMkdir).then(writeFile(htmlPath, html));
 
   mergeStyle(path.join(distPath, 'style.css'), stylesPath);
 
   copyDir(path.join(distPath, 'assets'), assetsPath);
+
+  console.log(`\nBundle successfully merged to ${distPath}\n`);
 }
 
 rm(distPath, optRmdir).then(() => replace());
