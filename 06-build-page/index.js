@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const { writeFile, mkdir, readFile, readdir, copyFile, unlink, rmdir } = require('fs/promises');
+const { writeFile, mkdir, readFile, readdir, rm, copyFile } = require('fs/promises');
+
 const templatePath = path.join(__dirname, 'template.html');
 const componentsPath = path.join(__dirname, 'components');
 const stylesPath = path.join(__dirname, 'styles');
@@ -44,12 +45,9 @@ async function copyDir(dist, from) {
   }
 }
 
-async function init() {
+async function replace() {
   let html = '';
-  await readFile(templatePath, 'utf8').then( value =>
-    html += value
-  );
-    
+  await readFile(templatePath, 'utf8').then( value => html += value);
   let files = await readdir(componentsPath, option);
 
   for (const file of files) {
@@ -68,8 +66,6 @@ async function init() {
     }
   }
 
-  await wipeFolder(distPath);
-
   await mkdir(distPath, optMkdir).then(writeFile(htmlPath, html));
 
   await mergeStyle(path.join(distPath, 'style.css'), stylesPath);
@@ -79,22 +75,4 @@ async function init() {
   console.log(`\nBundle successfully merged to ${distPath}\n`);
 }
 
-async function wipeFolder(dist) {
-  try {
-      const innerContent = await readdir(dist, {withFileTypes: true}, err => {
-          if (err) return err;
-      });
-      for (const file of innerContent) {
-          if (file.isDirectory()) {
-              await recreateFolder(path.join(dist, file.name));
-          }
-          if (file.isFile()) await unlink(path.join(dist, file.name))
-      }
-      await rmdir(dist)
-
-  } catch (err) {
-    return;
-  }
-}
-
-init();
+rm(distPath, optRmdir).then(replace()).catch((error) => console.log(error.message))
