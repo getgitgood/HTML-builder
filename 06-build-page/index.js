@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { writeFile, mkdir, readFile, readdir, rm, copyFile } = require('fs/promises');
-
+const { writeFile, mkdir, readFile, readdir, copyFile, unlink, rmdir } = require('fs/promises');
 const templatePath = path.join(__dirname, 'template.html');
 const componentsPath = path.join(__dirname, 'components');
 const stylesPath = path.join(__dirname, 'styles');
@@ -45,12 +44,15 @@ async function copyDir(dist, from) {
   }
 }
 
-async function replace() {
+async function init() {
   let html = '';
-  await readFile(templatePath, 'utf8').then( value => html += value);
+  await readFile(templatePath, 'utf8').then( value =>
+    html += value
+  );
+    
   let files = await readdir(componentsPath, option);
 
-  for await (const file of files) {
+  for (const file of files) {
     const componentPath = path.join(componentsPath, file.name);
     const ext = path.extname(componentPath);
     if (file.isFile() && ext === '.html') {
@@ -65,13 +67,34 @@ async function replace() {
       });
     }
   }
-  mkdir(distPath, optMkdir).then(writeFile(htmlPath, html));
 
-  mergeStyle(path.join(distPath, 'style.css'), stylesPath);
+  await wipeFolder(distPath);
 
-  copyDir(path.join(distPath, 'assets'), assetsPath);
+  await mkdir(distPath, optMkdir).then(writeFile(htmlPath, html));
+
+  await mergeStyle(path.join(distPath, 'style.css'), stylesPath);
+
+  await copyDir(path.join(distPath, 'assets'), assetsPath);
 
   console.log(`\nBundle successfully merged to ${distPath}\n`);
 }
 
-rm(distPath, optRmdir).then(() => replace());
+async function wipeFolder(dist) {
+  try {
+      const innerContent = await readdir(dist, {withFileTypes: true}, err => {
+          if (err) return err;
+      });
+      for (const file of innerContent) {
+          if (file.isDirectory()) {
+              await recreateFolder(path.join(dist, file.name));
+          }
+          if (file.isFile()) await unlink(path.join(dist, file.name))
+      }
+      await rmdir(dist)
+
+  } catch (err) {
+    return;
+  }
+}
+
+init();
