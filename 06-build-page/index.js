@@ -45,8 +45,11 @@ async function copyDir(dist, from) {
   }
 }
 
-async function replace() {
+async function createBundle() {
   let html = '';
+
+  await rm(distPath, optRmdir);
+
   await readFile(templatePath, 'utf8').then( value => html += value);
   let files = await readdir(componentsPath, option);
 
@@ -72,7 +75,8 @@ async function replace() {
 
   await copyDir(path.join(distPath, 'assets'), assetsPath);
 
-  console.log(`\nBundle successfully merged to ${distPath}\n`);
 }
 
-rm(distPath, optRmdir).then(replace()).catch((error) => console.log(error.message))
+createBundle()
+.then(() => console.log(`\nBundle successfully merged to ${distPath}\n`))
+.catch((err) => console.log(err.message));
